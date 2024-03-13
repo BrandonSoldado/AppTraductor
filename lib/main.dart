@@ -10,73 +10,66 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Traductor',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: Traductor(),
+      title: 'Translator App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: TranslationPage(),
     );
   }
 }
 
-class Traductor extends StatefulWidget {
+class TranslationPage extends StatefulWidget {
   @override
-  _TraductorState createState() => _TraductorState();
+  _TranslationPageState createState() => _TranslationPageState();
 }
 
-class _TraductorState extends State<Traductor> {
-  final TextEditingController _controller = TextEditingController();
+class _TranslationPageState extends State<TranslationPage> {
+  final String _apiKey = 'YOUR_API_KEY';
+  final String _url = 'https://translation.googleapis.com/language/translate/v2';
+
   String _translatedText = '';
+  TextEditingController _textController = TextEditingController();
 
   void _translate() async {
-    final response = await http.post(
-      Uri.parse('https://translation.googleapis.com/language/translate/v2'),
-      body: {
-        'q': _controller.text,
-        'source': 'es',
-        'target': 'en',
-        'format': 'text',
-        'key': '@AIzaSyBicvXQazxTfWQvlsHG_DQduaNIXWRmcz0_',
-      },
-    );
+    String text = _textController.text.trim();
+    if (text.isEmpty) return;
 
+    String target = 'en'; // English
+    String url = '$_url?key=$_apiKey&q=$text&target=$target';
+
+    var response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
+      var jsonResponse = jsonDecode(response.body);
       setState(() {
-        _translatedText = data['data']['translations'][0]['translatedText'];
+        _translatedText = jsonResponse['data']['translations'][0]['translatedText'];
       });
     } else {
-      throw Exception('Failed to translate text');
+      print('Request failed with status: ${response.statusCode}.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Traductor'),
-      ),
+      appBar: AppBar(title: Text('Translator App')),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
-          children: <Widget>[
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             TextField(
-              controller: _controller,
+              controller: _textController,
               decoration: InputDecoration(
-                labelText: 'Ingresa una palabra en español',
+                hintText: 'Enter text in Spanish...',
               ),
             ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: _translate,
-              child: Text('Traducir'),
+              child: Text('Translate'),
             ),
-            SizedBox(height: 16.0),
-            Text(
-              'Traducción al inglés:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            SizedBox(height: 20),
+            Text('Translated Text:', style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
             Text(_translatedText),
           ],
         ),
