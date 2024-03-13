@@ -23,7 +23,7 @@ class TranslationPage extends StatefulWidget {
 }
 
 class _TranslationPageState extends State<TranslationPage> {
-  final String _apiKey = 'YOUR_API_KEY';
+  final String _apiKey = '@AIzaSyBicvXQazxTfWQvlsHG_DQduaNIXWRmcz0_';
   final String _url = 'https://translation.googleapis.com/language/translate/v2';
 
   String _translatedText = '';
